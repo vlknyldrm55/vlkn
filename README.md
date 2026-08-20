@@ -1,20 +1,38 @@
 # ☁️ CloudStream için Türkçe Eklentiler
 
+**Kısakod:** `vlkn` *(veya `vlknyldrm55`)*
 
-Kısakod: feroxxcs3
-
-Çalışmayan eklenti ya da eklenmesini istediğiniz eklenti istekleriniz icin issue açabilirsiniz
+Çalışmayan eklenti ya da eklenmesini istediğiniz eklenti istekleriniz için issue açabilirsiniz.  
 [Döküman](https://recloudstream.github.io/csdocs/) **━** [Resmi Site](https://dweb.link/ipns/cloudstream.on.fleek.co/) **━** [Wiki](https://cloudstream.miraheze.org/wiki/Main_Page)
 
-[![ForTheBadge made-with-kotlin](https://ForTheBadge.com/images/badges/made-with-kotlin.svg)](https://kotlinlang.org/)
-[![ForTheBadge built-with-love](https://ForTheBadge.com/images/badges/built-with-love.svg)](https://GitHub.com/feroxx/)
+---
 
-## 💾 Kurulum
+## 💾 Kurulum Yöntemleri
 
-1. **[cloudstream/release](https://github.com/recloudstream/cloudstream/releases)** _Adresinden güncel APK dosyasını indirip kurun._
-2. **Uygulamanın yüklü olduğu cihazda** _[depoyu otomatik yüklemek için (http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/feroxx/Kekik-cloudstream/refs/heads/builds/repo.json)
+### 1. Tek Tıkla Otomatik Kurulum (Cihaz Üzerinden)
+CloudStream'in kurulu olduğu cihazda aşağıdaki bağlantıya tıklayarak depoyu doğrudan uygulamaya aktarabilirsiniz:
 
-Eklenti içeriği ve güncel durumları
+🔗 **[CloudStream'e Ekle](cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)**
+
+---
+
+### 2. Manuel (Elle) Kurulum
+1. CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümüne gidin.
+2. Açılan alanlara şu bilgileri girin:
+   * **Depo Adı:** `vlkn`
+   * **Depo URL:** 
+     `https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json`
+
+---
+
+### 3. Kısakod (Shortcode) İle Kurulum
+Kısakod sisteminin aktif çalışabilmesi için repondaki `shortcodes.json` veya yönlendirme servisi ayarlarının bu kısakoda tanımlı olması gerekir.
+
+* **Kısakod:** `vlkn`
+
+---
+
+## 🧩 Eklenti İçeriği ve Güncel Durumlar
 
 <table>
   <tr>
