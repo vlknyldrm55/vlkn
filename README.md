@@ -16,7 +16,7 @@ CloudStream'in kurulu olduğu cihazda aşağıdaki görsele veya bağlantıya t�
 [![CloudStream'e Ekle](https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white)](https://recloudstream.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)
 
 > **Not:** Eğer buton açılmazsa doğrudan şu bağlantıya tıklayın:  
-> [Depoyu Otomatik Yükle](https://recloudstream.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)
+> [Depoyu Otomatik Yükle][CloudStream'e Ekle](https://vlknyldrm55.github.io/vlkn/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)
 
 ---
 
