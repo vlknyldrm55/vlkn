@@ -32,7 +32,7 @@ CloudStream'in kurulu olduğu cihazda aşağıdaki görsele veya bağlantıya t�
 ### 3. Kısakod (Shortcode) İle Kurulum
 Kısakod sisteminin aktif çalışabilmesi için repondaki `shortcodes.json` veya yönlendirme servisi ayarlarının bu kısakoda tanımlı olması gerekir.
 
-* **Kısakod:** `!vlkn`
+* **Kısakod:** `vlkn`
 
 ---
 
