@@ -10,9 +10,12 @@
 ## 💾 Kurulum Yöntemleri
 
 ### 1. Tek Tıkla Otomatik Kurulum (Cihaz Üzerinden)
-CloudStream'in kurulu olduğu cihazda aşağıdaki bağlantıya tıklayarak depoyu doğrudan uygulamaya aktarabilirsiniz:
 
-🔗 **[CloudStream'e Ekle](cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)**
+CloudStream'in kurulu olduğu cihazda aşağıdaki butona tıklayarak depoyu doğrudan uygulamaya aktarabilirsiniz:
+
+<a href="cloudstreamrepo://[raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json](https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)">
+  <img src="[https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white](https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white)" alt="CloudStream'e Ekle" />
+</a>
 
 ---
 
