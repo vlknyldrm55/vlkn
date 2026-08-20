@@ -23,7 +23,7 @@ CloudStream'in kurulu olduğu cihazda aşağıdaki görsele veya bağlantıya t�
 ### 2. Manuel (Elle) Kurulum
 1. CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümüne gidin.
 2. Açılan alanlara şu bilgileri girin:
-   * **Depo Adı:** `!vlkn`
+   * **Depo Adı:** `vlkn`
    * **Depo URL:** 
      `https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json`
 
@@ -32,7 +32,7 @@ CloudStream'in kurulu olduğu cihazda aşağıdaki görsele veya bağlantıya t�
 ### 3. Kısakod (Shortcode) İle Kurulum
 Kısakod sisteminin aktif çalışabilmesi için repondaki `shortcodes.json` veya yönlendirme servisi ayarlarının bu kısakoda tanımlı olması gerekir.
 
-* **Kısakod:** `vlkn`
+* **Kısakod:** `!vlkn`
 
 ---
 
