@@ -11,18 +11,19 @@
 
 ### 1. Tek Tıkla Otomatik Kurulum (Cihaz Üzerinden)
 
-CloudStream'in kurulu olduğu cihazda aşağıdaki butona tıklayarak depoyu doğrudan uygulamaya aktarabilirsiniz:
+CloudStream'in kurulu olduğu cihazda aşağıdaki görsele veya bağlantıya tıklayarak depoyu uygulamaya aktarabilirsiniz:
 
-<a href="cloudstreamrepo://[raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json](https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)">
-  <img src="[https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white](https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white)" alt="CloudStream'e Ekle" />
-</a>
+[![CloudStream'e Ekle](https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white)](https://recloudstream.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)
+
+> **Not:** Eğer buton açılmazsa doğrudan şu bağlantıya tıklayın:  
+> [Depoyu Otomatik Yükle](https://recloudstream.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)
 
 ---
 
 ### 2. Manuel (Elle) Kurulum
 1. CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümüne gidin.
 2. Açılan alanlara şu bilgileri girin:
-   * **Depo Adı:** `vlkn`
+   * **Depo Adı:** `!vlkn`
    * **Depo URL:** 
      `https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json`
 
