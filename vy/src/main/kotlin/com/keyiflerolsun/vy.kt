@@ -2,7 +2,9 @@
 
 package com.keyiflerolsun
 
+import android.content.Context
 import android.util.Log
+import androidx.preference.PreferenceManager
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
@@ -12,12 +14,11 @@ import java.io.InputStream
 class vy : MainAPI() {
     override var name = "vy"
     
-    // Eski "override var mainUrl = ..." satırı yerine bunu yapıştırın:
     override var mainUrl: String
         get() {
-            val context = com.lagradost.cloudstream3.AcraApplication.context
-            val sharedPref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
-            val userPassword = sharedPref.getString("vy_password", "") ?: ""
+            val context: Context? = AcraApplication.context
+            val sharedPref = if (context != null) PreferenceManager.getDefaultSharedPreferences(context) else null
+            val userPassword = sharedPref?.getString("vy_password", "") ?: ""
             
             return "https://my-stream.volkan5569.workers.dev/?key=$userPassword"
         }
@@ -51,7 +52,6 @@ class vy : MainAPI() {
                     }
                 }
 
-
                 HomePageList(title, show, isHorizontalImages = true)
             },
             hasNext = false
@@ -76,7 +76,6 @@ class vy : MainAPI() {
                 this.posterUrl = posterurl
                 this.lang = nation
             }
-
         }
     }
 
@@ -111,7 +110,6 @@ class vy : MainAPI() {
                     this.posterUrl = rcPosterUrl
                     this.lang = rcNation
                 })
-
             }
         }
 
@@ -136,13 +134,12 @@ class vy : MainAPI() {
                 source  = this.name,
                 name    = this.name,
                 url     = loadData.url,
-
-                     type = ExtractorLinkType.M3U8
-                 ) {
-                     this.referer = kanal.headers["referrer"] ?: ""
-                     this.headers = kanal.headers
-                     quality = Qualities.Unknown.value
-                 }
+                type    = ExtractorLinkType.M3U8
+            ) {
+                this.referer = kanal.headers["referrer"] ?: ""
+                this.headers = kanal.headers
+                quality = Qualities.Unknown.value
+            }
         )
 
         return true
@@ -268,52 +265,17 @@ class IptvPlaylistParser {
     /** Check if given content is valid M3U8 playlist. */
     private fun String.isExtendedM3u(): Boolean = startsWith(EXT_M3U)
 
-    /**
-     * Get title of media.
-     *
-     * Example:-
-     *
-     * Input:
-     * ```
-     * #EXTINF:-1 tvg-id="1234" group-title="Kids" tvg-logo="url/to/logo", Title
-     * ```
-     *
-     * Result: Title
-     */
+    /** Get title of media. */
     private fun String.getTitle(): String? {
         return split(",").lastOrNull()?.replaceQuotesAndTrim()
     }
 
-    /**
-     * Get media url.
-     *
-     * Example:-
-     *
-     * Input:
-     * ```
-     * https://example.com/sample.m3u8|user-agent="Custom"
-     * ```
-     *
-     * Result: https://example.com/sample.m3u8
-     */
+    /** Get media url. */
     private fun String.getUrl(): String? {
         return split("|").firstOrNull()?.replaceQuotesAndTrim()
     }
 
-    /**
-     * Get url parameter with key.
-     *
-     * Example:-
-     *
-     * Input:
-     * ```
-     * http://192.54.104.122:8080/d/abcdef/video.mp4|User-Agent=Mozilla&Referer=CustomReferrer
-     * ```
-     *
-     * If given key is `user-agent`, then
-     *
-     * Result: Mozilla
-     */
+    /** Get url parameter with key. */
     private fun String.getUrlParameter(key: String): String? {
         val urlRegex     = Regex("^(.*)\\|", RegexOption.IGNORE_CASE)
         val keyRegex     = Regex("$key=(\\w[^&]*)", RegexOption.IGNORE_CASE)
@@ -322,25 +284,7 @@ class IptvPlaylistParser {
         return keyRegex.find(paramsString)?.groups?.get(1)?.value
     }
 
-    /**
-     * Get attributes from `#EXTINF` tag as Map<String, String>.
-     *
-     * Example:-
-     *
-     * Input:
-     * ```
-     * #EXTINF:-1 tvg-id="1234" group-title="Kids" tvg-logo="url/to/logo", Title
-     * ```
-     *
-     * Result will be equivalent to kotlin map:
-     * ```Kotlin
-     * mapOf(
-     *   "tvg-id" to "1234",
-     *   "group-title" to "Kids",
-     *   "tvg-logo" to "url/to/logo"
-     * )
-     * ```
-     */
+    /** Get attributes from `#EXTINF` tag as Map<String, String>. */
     private fun String.getAttributes(): Map<String, String> {
         val extInfRegex      = Regex("(#EXTINF:.?[0-9]+)", RegexOption.IGNORE_CASE)
         val attributesString = replace(extInfRegex, "").replaceQuotesAndTrim().split(",").first()
@@ -354,18 +298,7 @@ class IptvPlaylistParser {
             .toMap()
     }
 
-    /**
-     * Get value from a tag.
-     *
-     * Example:-
-     *
-     * Input:
-     * ```
-     * #EXTVLCOPT:http-referrer=http://example.com/
-     * ```
-     *
-     * Result: http://example.com/
-     */
+    /** Get value from a tag. */
     private fun String.getTagValue(key: String): String? {
         val keyRegex = Regex("$key=(.*)", RegexOption.IGNORE_CASE)
 
@@ -381,7 +314,5 @@ class IptvPlaylistParser {
 
 /** Exception thrown when an error occurs while parsing playlist. */
 sealed class PlaylistParserException(message: String) : Exception(message) {
-
-    /** Exception thrown if given file content is not valid. */
     class InvalidHeader : PlaylistParserException("Invalid file header. Header doesn't start with #EXTM3U")
 }
