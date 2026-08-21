@@ -71,21 +71,18 @@ class Diziyo : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/load/page/sayfano/home/"                                       to "Yeni Eklenen Filmler",
-        //"${mainUrl}/load/page/sayfano/categories/nette-ilk-filmler/"               to "Nette İlk Filmler",
-        "${mainUrl}/load/page/sayfano/home-series/"                                to "Yeni Eklenen Diziler",
-        "${mainUrl}/load/page/sayfano/categories/tavsiye-filmler-izle3/"           to "Tavsiye Filmler",
-        "${mainUrl}/load/page/sayfano/imdb7/"                                      to "IMDB 7+ Filmler",
-        "${mainUrl}/load/page/sayfano/mostCommented/"                              to "En Çok Yorumlananlar",
-        "${mainUrl}/load/page/sayfano/mostLiked/"                                  to "En Çok Beğenilenler",
-        //"${mainUrl}/load/page/sayfano/genres/aile-filmleri-izleyin-6/"             to "Aile Filmleri",
-        //"${mainUrl}/load/page/sayfano/genres/aksiyon-filmleri-izleyin-5/"          to "Aksiyon Filmleri",
-        //"${mainUrl}/load/page/sayfano/genres/animasyon-filmlerini-izleyin-5/"      to "Animasyon Filmleri",
-        //"${mainUrl}/load/page/sayfano/genres/belgesel-filmlerini-izle-1/"          to "Belgesel Filmleri",
-        //"${mainUrl}/load/page/sayfano/genres/bilim-kurgu-filmlerini-izleyin-3/"    to "Bilim Kurgu Filmleri",
-        //"${mainUrl}/load/page/sayfano/genres/komedi-filmlerini-izleyin-1/"         to "Komedi Filmleri",
-        //"${mainUrl}/load/page/sayfano/genres/korku-filmlerini-izle-4/"             to "Korku Filmleri",
-        //"${mainUrl}/load/page/sayfano/genres/romantik-filmleri-izle-2/"            to "Romantik Filmleri"
+        "${mainUrl}/dizi-bolumleri/sayfano/" to "Dizi Bölümleri",
+        "${mainUrl}/diziler/sayfano/" to "Yeni Diziler",
+        "${mainUrl}/filmler/sayfano/" to "Yeni Filmler",
+        "${mainUrl}/trendler/sayfano/" to "Haftanın Trendleri",
+        "${mainUrl}/filmler/turkce-dublaj/sayfano/" to "Türkçe Dublaj Filmler",
+        "${mainUrl}/filmler/turkce-altyazi/sayfano/" to "Türkçe Altyazı Filmler",
+        "${mainUrl}/filmler/yerli/sayfano/" to "Yerli Filmler",
+        "${mainUrl}/filmler/seri-filmler/sayfano/" to "Seri Filmler",
+        "${mainUrl}/animeler/sayfano/" to "Animeler",
+        "${mainUrl}/trendler/film-ilk-250/sayfano/" to "Film İlk 250",
+        "${mainUrl}/trendler/dizi-ilk-250/sayfano/" to "Dizi İlk 250",
+        "${mainUrl}/trendler/anime-ilk-250/sayfano/" to "Anime İlk 250"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
