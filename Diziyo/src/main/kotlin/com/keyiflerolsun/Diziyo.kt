@@ -39,7 +39,6 @@ import org.jsoup.nodes.Element
 class Diziyo : MainAPI() {
     override var mainUrl                    = "https://www.diziyo.so"
     override var name                       = "Diziyo"
-    override var version                    = 7
     override val hasMainPage                = true
     override var lang                       = "tr"
     override val hasQuickSearch             = true
