@@ -1,6 +1,6 @@
 # ☁️ CloudStream için Türkçe Eklentiler
 
-**Kısakod:** `vlkn` *(veya `vlknyldrm55`)*
+**Kısakod:** `tinyurl.com/vlkn55`
 
 Çalışmayan eklenti ya da eklenmesini istediğiniz eklenti istekleriniz için issue açabilirsiniz.  
 [Döküman](https://recloudstream.github.io/csdocs/) **━** [Resmi Site](https://dweb.link/ipns/cloudstream.on.fleek.co/) **━** [Wiki](https://cloudstream.miraheze.org/wiki/Main_Page)
@@ -9,30 +9,21 @@
 
 ## 💾 Kurulum Yöntemleri
 
-### 1. Tek Tıkla Otomatik Kurulum (Cihaz Üzerinden)
+### 1. Kısakod (Shortcode) İle Kurulum (En Kolay)
+CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümündeki URL alanına doğrudan aşağıdaki adresi yazabilirsiniz:
 
-CloudStream'in kurulu olduğu cihazda aşağıdaki görsele veya bağlantıya tıklayarak depoyu uygulamaya aktarabilirsiniz:
-
-[![CloudStream'e Ekle](https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white)](https://recloudstream.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)
-
-> **Not:** Eğer buton açılmazsa doğrudan şu bağlantıya tıklayın:  
-> [Depoyu Otomatik Yükle][![CloudStream'e Ekle](https://img.shields.org/badge/CloudStream'e_Ekle-28a745?style=for-the-badge&logo=android&logoColor=white)](https://vlknyldrm55.github.io/vlkn/?r=cloudstreamrepo://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json)
+* **Kısakod / URL:** `tinyurl.com/vlkn55`
 
 ---
 
 ### 2. Manuel (Elle) Kurulum
+Kısakod servislerinde sorun yaşarsanız doğrudan ham JSON bağlantısını kullanabilirsiniz:
+
 1. CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümüne gidin.
-2. Açılan alanlara şu bilgileri girin:
+2. Açılan alana şu bilgileri girin:
    * **Depo Adı:** `vlkn`
-   * **Depo URL:** 
+   * **Depo URL:**  
      `https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json`
-
----
-
-### 3. Kısakod (Shortcode) İle Kurulum
-Kısakod sisteminin aktif çalışabilmesi için repondaki `shortcodes.json` veya yönlendirme servisi ayarlarının bu kısakoda tanımlı olması gerekir.
-
-* **Kısakod:** `vlkn`
 
 ---
 
