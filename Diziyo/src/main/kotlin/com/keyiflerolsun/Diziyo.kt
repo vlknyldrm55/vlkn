@@ -89,7 +89,8 @@ class Diziyo : MainAPI() {
         )
         val doc = app.get(url, headers = headers, referer = mainUrl, interceptor = interceptor).document
         
-        val home = doc.select("div.col, div.item, .film-box, article").mapNotNull { it.toSearchResult() }
+        // Sitedeki tüm olası kart ve liste kapsayıcılarını hedefliyoruz
+        val home = doc.select("div.film-card, div.list-item, div.item, div.col-lg-2, div.col-md-3, div.col-6, article").mapNotNull { it.toSearchResult() }
         
         return newHomePageResponse(request.name, home)
     }
