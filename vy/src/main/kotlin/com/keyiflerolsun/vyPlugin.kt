@@ -1,25 +1,29 @@
 package com.keyiflerolsun
 
+import android.app.AlertDialog
+import android.content.Context
+import android.text.InputType
+import android.widget.EditText
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
-import com.lagradost.cloudstream3.AcraApplication.getKey
-import com.lagradost.cloudstream3.AcraApplication.setKey
+import com.lagradost.cloudstream3.utils.DataStoreHelper.setKey
+import com.lagradost.cloudstream3.utils.DataStoreHelper.getKey
 
 @CloudstreamPlugin
 class vyPlugin: Plugin() {
-    override fun load(androidContext: android.content.Context) {
+    override fun load(context: Context) {
         registerMainAPI(vy())
     }
 
-    override fun openSettings(androidContext: android.content.Context) {
-        val builder = android.app.AlertDialog.Builder(androidContext)
+    override fun openSettings(context: Context) {
+        val builder = AlertDialog.Builder(context)
         builder.setTitle("Erişim Şifresi")
-        
-        val input = android.widget.EditText(androidContext)
-        input.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+        val input = EditText(context)
+        input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
         input.hint = "Şifrenizi girin"
         input.setText(getKey<String>("vy_password") ?: "")
-        
+
         builder.setView(input)
 
         builder.setPositiveButton("Kaydet") { dialog, _ ->
