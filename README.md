@@ -14,7 +14,7 @@ CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümündeki U
 
 * **Kısakod / URL:**
 ```text
-[tinyurl.com/vlkn55](https://tinyurl.com/vlkn55)
+tinyurl.com/vlkn55
 ```
 ---
 
@@ -26,7 +26,7 @@ Kısakod servislerinde sorun yaşarsanız doğrudan ham JSON bağlantısını ku
    * **Depo Adı:** `vlkn`
    * **Depo URL:**
    ```text 
-     `https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json`
+     https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json
    ```
 ---
 
