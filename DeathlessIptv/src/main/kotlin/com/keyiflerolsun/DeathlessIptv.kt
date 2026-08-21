@@ -10,21 +10,18 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
 
 class DeathlessIptv : MainAPI() {
-    override var mainUrl                = "https://localhost"
-    override var name                   = "Deathless IPTV"
-    override val hasMainPage            = true
-    override var lang                   = "tr"
-    override val hasQuickSearch         = true
-    override val hasDownloadSupport     = false
-    override val supportedTypes         = setOf(TvType.Live)
+    override var mainUrl                  = "https://snowy-mountain-b566.volkan5569.workers.dev/"
+    override var name                     = "Deathless IPTV"
+    override val hasMainPage              = true
+    override var lang                     = "tr"
+    override val hasQuickSearch           = true
+    override val hasDownloadSupport       = false
+    override val supportedTypes           = setOf(TvType.Live)
 
-    // Yeni Cloudflare Workers gizli adresimiz
-    private val workersUrl = "https://snowy-mountain-b566.volkan5569.workers.dev/"
-
-    // İnternet üzerinden M3U verisini güvenle çeken yardımcı fonksiyon
+    // M3U verisini doğrudan mainUrl üzerinden güvenle çeken fonksiyon
     private suspend fun getM3uData(): String {
         return try {
-            app.get(workersUrl).text
+            app.get(mainUrl).text.trimStart()
         } catch (e: Exception) {
             ""
         }
@@ -189,7 +186,7 @@ data class Playlist(
 )
 
 data class PlaylistItem(
-    val title: String?                  = null,
+    val title: String?                    = null,
     val attributes: Map<String, String> = emptyMap(),
     val headers: Map<String, String>    = emptyMap(),
     val url: String?                    = null,
