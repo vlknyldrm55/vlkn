@@ -11,8 +11,6 @@ import java.io.InputStream
 
 class vy : MainAPI() {
     override var name = "vy"
-    
-    // Doğrudan sabit Worker adresinizi yazın, derleyici hatasını çözen kısım burasıdır:
     override var mainUrl = "https://my-stream.volkan5569.workers.dev"
 
     override var lang = "tr"
@@ -20,16 +18,12 @@ class vy : MainAPI() {
     override val hasDownloadSupport = false
     override val supportedTypes = setOf(TvType.Live)
 
-    // İstek atarken kullanıcının girdiği şifreyi dinamik olarak alıp URL'e ekleyen yardımcı fonksiyon:
     private fun getAuthUrl(): String {
-        val context = AcraApplication.context ?: return mainUrl
-        val sharedPref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
-        val userPassword = sharedPref.getString("vy_password", "") ?: ""
+        val userPassword = getKey<String>("vy_password") ?: ""
         return "$mainUrl/?key=$userPassword"
     }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        // mainUrl yerine getAuthUrl() çağırıyoruz
         val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
 
         return newHomePageResponse(
