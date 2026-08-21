@@ -67,45 +67,74 @@ class Diziyo : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/filmler/sayfano/" to "Yeni Filmler",
+        "${mainUrl}/bolumler/sayfano/" to "Dizi Bölümleri",
         "${mainUrl}/diziler/sayfano/" to "Yeni Diziler",
-        "${mainUrl}/dizi-bolumleri/sayfano/" to "Dizi Bölümleri",
-        "${mainUrl}/animeler/sayfano/" to "Animeler",
-        "${mainUrl}/trendler/sayfano/" to "Haftanın Trendleri",
-        "${mainUrl}/filmler/turkce-dublaj/sayfano/" to "Türkçe Dublaj Filmler",
-        "${mainUrl}/filmler/turkce-altyazi/sayfano/" to "Türkçe Altyazı Filmler",
-        "${mainUrl}/filmler/yerli/sayfano/" to "Yerli Filmler",
-        "${mainUrl}/filmler/seri-filmler/sayfano/" to "Seri Filmler",
-        "${mainUrl}/trendler/film-ilk-250/sayfano/" to "Film İlk 250",
-        "${mainUrl}/trendler/dizi-ilk-250/sayfano/" to "Dizi İlk 250"
+        "${mainUrl}/filmler/sayfano/" to "Yeni Filmler",
+        "${mainUrl}/trendler/sayfano/" to "Haftanın Trendleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = request.data.replace("sayfano", page.toString())
+
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
             "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "X-Requested-With" to "fetch"
         )
-        val doc = app.get(url, headers = headers, referer = mainUrl, interceptor = interceptor).document
-        
-        // Sitedeki tüm olası kart ve liste kapsayıcılarını hedefliyoruz
-        val home = doc.select("div.film-card, div.list-item, div.item, div.col-lg-2, div.col-md-3, div.col-6, article").mapNotNull { it.toSearchResult() }
-        
+
+        val doc = app.get(
+            url,
+            headers = headers,
+            referer = mainUrl,
+            interceptor = interceptor
+        ).document
+
+        val home = doc.select(
+            "a[href*='/film/'], a[href*='/dizi/'], a[href*='/anime/']"
+        )
+            .mapNotNull { it.toSearchResult() }
+            .distinctBy { it.url }
+
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("a")?.attr("title") ?: this.selectFirst(".title, h3, h4")?.text() ?: return null
-        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src") ?: this.selectFirst("img")?.attr("src"))
+        val href = fixUrlNull(attr("href")) ?: return null
 
-        val type = if (href.contains("/dizi/") || href.contains("/sezon")) TvType.TvSeries else TvType.Movie
+        val isMovie = href.contains("/film/")
+        val isSeries = href.contains("/dizi/")
+        val isAnime = href.contains("/anime/")
 
-        return if (type == TvType.TvSeries) {
-            newTvSeriesSearchResponse(title, href, type) { this.posterUrl = posterUrl }
-        } else {
-            newMovieSearchResponse(title, href, type) { this.posterUrl = posterUrl }
+        if (!isMovie && !isSeries && !isAnime) return null
+
+        val image = selectFirst("img")
+        val posterUrl = fixUrlNull(
+            image?.attr("data-src")
+                ?.takeIf { it.isNotBlank() }
+                ?: image?.attr("data-lazy-src")
+                    ?.takeIf { it.isNotBlank() }
+                ?: image?.attr("src")
+        )
+
+        val title = attr("title")
+            .takeIf { it.isNotBlank() }
+            ?: image?.attr("alt")
+                ?.takeIf { it.isNotBlank() }
+            ?: selectFirst(".title, h2, h3, h4")
+                ?.text()
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+            ?: text().trim().replace(Regex("\\s+"), " ")
+
+        if (title.isBlank()) return null
+
+        return when {
+            isMovie -> newMovieSearchResponse(title, href, TvType.Movie) {
+                this.posterUrl = posterUrl
+            }
+            else -> newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                this.posterUrl = posterUrl
+            }
         }
     }
 
