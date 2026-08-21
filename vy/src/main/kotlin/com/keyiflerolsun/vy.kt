@@ -18,13 +18,8 @@ class vy : MainAPI() {
     override val hasDownloadSupport = false
     override val supportedTypes = setOf(TvType.Live)
 
-    private fun getAuthUrl(): String {
-        val userPassword = getKey<String>("vy_password") ?: ""
-        return "$mainUrl/?key=$userPassword"
-    }
-
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
+        val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
 
         return newHomePageResponse(
             kanallar.items.groupBy { it.attributes["group-title"] }.map { group ->
@@ -53,7 +48,7 @@ class vy : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
+        val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
 
         return kanallar.items.filter { it.title.toString().lowercase().contains(query.lowercase()) }.map { kanal ->
             val streamurl   = kanal.url.toString()
@@ -83,7 +78,7 @@ class vy : MainAPI() {
             "» ${loadData.group} | ${loadData.nation} «"
         }
 
-        val kanallar        = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
+        val kanallar        = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
         val recommendations = mutableListOf<LiveSearchResponse>()
 
         for (kanal in kanallar.items) {
@@ -119,7 +114,7 @@ class vy : MainAPI() {
         val loadData = fetchDataFromUrlOrJson(data)
         Log.d("IPTV", "loadData » $loadData")
 
-        val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
+        val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
         val kanal    = kanallar.items.first { it.url == loadData.url }
         Log.d("IPTV", "kanal » $kanal")
 
@@ -145,7 +140,7 @@ class vy : MainAPI() {
         if (data.startsWith("{")) {
             return parseJson<LoadData>(data)
         } else {
-            val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
+            val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
             val kanal    = kanallar.items.first { it.url == data }
 
             val streamurl   = kanal.url.toString()
