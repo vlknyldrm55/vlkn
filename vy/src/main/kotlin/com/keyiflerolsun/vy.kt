@@ -10,13 +10,23 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
 
 class vy : MainAPI() {
-    override var mainUrl              = "https://my-stream.volkan5569.workers.dev/"
-    override var name                 = "vy"
-    override val hasMainPage          = true
-    override var lang                 = "tr"
-    override val hasQuickSearch       = true
-    override val hasDownloadSupport   = false
-    override val supportedTypes       = setOf(TvType.Live)
+    override var name = "vy"
+    
+    // Eski "override var mainUrl = ..." satırı yerine bunu yapıştırın:
+    override var mainUrl: String
+        get() {
+            val context = com.lagradost.cloudstream3.AcraApplication.context
+            val sharedPref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+            val userPassword = sharedPref.getString("vy_password", "") ?: ""
+            
+            return "https://my-stream.volkan5569.workers.dev/?key=$userPassword"
+        }
+        set(value) {}
+
+    override var lang = "tr"
+    override val hasMainPage = true
+    override val hasDownloadSupport = false
+    override val supportedTypes = setOf(TvType.Live)
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
