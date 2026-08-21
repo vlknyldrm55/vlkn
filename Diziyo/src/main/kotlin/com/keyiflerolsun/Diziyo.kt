@@ -362,13 +362,15 @@ override suspend fun loadLinks(
             button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
         }.forEach { (source, videoID) ->
             val apiGet = app.get(
-                "${mainUrl}/video/$videoID/", interceptor = interceptor,
-                headers = mapOf(
-                    "Content-Type" to "application/json",
-                    "X-Requested-With" to "fetch"
-                ),
-                referer = data
-            ).text
+    "${mainUrl}/video/$videoID/", 
+    interceptor = interceptor,
+    headers = mapOf(
+        "Content-Type" to "application/json",
+        "X-Requested-With" to "fetch",
+        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0" // Bunu ekleyelim
+    ),
+    referer = data
+).text
             Log.d("HDCH", "Found videoID: $videoID")
             var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
             Log.d("HDCH", "$iframe » $iframe")
