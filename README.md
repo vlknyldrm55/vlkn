@@ -15,7 +15,7 @@ CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümündeki U
 * **Kısakod / URL:**
 ```text
 [tinyurl.com/vlkn55](https://tinyurl.com/vlkn55)
-
+```
 ---
 
 ### 2. Manuel (Elle) Kurulum
@@ -27,7 +27,7 @@ Kısakod servislerinde sorun yaşarsanız doğrudan ham JSON bağlantısını ku
    * **Depo URL:**
    ```text 
      `https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json`
-
+   ```
 ---
 
 ## 🧩 Eklenti İçeriği ve Güncel Durumlar
