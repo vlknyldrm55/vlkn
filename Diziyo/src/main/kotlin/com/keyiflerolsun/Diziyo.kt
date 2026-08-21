@@ -37,15 +37,16 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 class Diziyo : MainAPI() {
-    override var mainUrl                   = "https://www.diziyo.so"
-    override var name                      = "Diziyo"
-    override val hasMainPage               = true
-    override var lang                      = "tr"
-    override val hasQuickSearch            = true
-    override val supportedTypes            = setOf(TvType.Movie, TvType.TvSeries)
+    override var mainUrl                    = "https://www.diziyo.so"
+    override var name                       = "Diziyo"
+    override var version                    = 7
+    override val hasMainPage                = true
+    override var lang                       = "tr"
+    override val hasQuickSearch             = true
+    override val supportedTypes             = setOf(TvType.Movie, TvType.TvSeries)
 
     override var sequentialMainPage = true         // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay       = 150L  // ? 0.15 saniye
+    override var sequentialMainPageDelay        = 150L  // ? 0.15 saniye
     override var sequentialMainPageScrollDelay = 150L  // ? 0.15 saniye
 
     // ! CloudFlare v2
@@ -365,10 +366,10 @@ class Diziyo : MainAPI() {
     }
 
     private data class SubSource(
-        @JsonProperty("file")     val file: String?  = null,
-        @JsonProperty("label")    val label: String? = null,
+        @JsonProperty("file")      val file: String?  = null,
+        @JsonProperty("label")     val label: String? = null,
         @JsonProperty("language") val language: String? = null,
-        @JsonProperty("kind")     val kind: String?  = null
+        @JsonProperty("kind")      val kind: String?  = null
     )
 
     data class Results(
