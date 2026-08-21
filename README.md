@@ -12,7 +12,9 @@
 ### 1. Kısakod (Shortcode) İle Kurulum (En Kolay)
 CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümündeki URL alanına doğrudan aşağıdaki adresi yazabilirsiniz:
 
-* **Kısakod / URL:** `tinyurl.com/vlkn55`
+* **Kısakod / URL:**
+```text
+[tinyurl.com/vlkn55](https://tinyurl.com/vlkn55)
 
 ---
 
@@ -22,7 +24,8 @@ Kısakod servislerinde sorun yaşarsanız doğrudan ham JSON bağlantısını ku
 1. CloudStream uygulamasında **Ayarlar > Eklentiler > Depo Ekle** bölümüne gidin.
 2. Açılan alana şu bilgileri girin:
    * **Depo Adı:** `vlkn`
-   * **Depo URL:**  
+   * **Depo URL:**
+   ```text 
      `https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/repo.json`
 
 ---
