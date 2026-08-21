@@ -44,9 +44,9 @@ class Diziyo : MainAPI() {
     override val hasQuickSearch             = true
     override val supportedTypes             = setOf(TvType.Movie, TvType.TvSeries)
 
-    override var sequentialMainPage = true         // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
-    override var sequentialMainPageDelay        = 150L  // ? 0.15 saniye
-    override var sequentialMainPageScrollDelay = 150L  // ? 0.15 saniye
+    override var sequentialMainPage = false         // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPageDelay        = 0L  // ? 0.15 saniye
+    override var sequentialMainPageScrollDelay = 0L  // ? 0.15 saniye
 
     // ! CloudFlare v2
     private val cloudflareKiller by lazy { CloudflareKiller() }
@@ -67,33 +67,77 @@ class Diziyo : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/bolumler/sayfano/" to "Dizi Bölümleri",
-        "${mainUrl}/diziler/sayfano/" to "Yeni Diziler",
-        "${mainUrl}/filmler/sayfano/" to "Yeni Filmler",
-        "${mainUrl}/trendler/sayfano/" to "Haftanın Trendleri"
+        "${mainUrl}/?cs_section=episodes" to "Dizi Bölümleri",
+        "${mainUrl}/?cs_section=series" to "Yeni Diziler",
+        "${mainUrl}/?cs_section=movies" to "Yeni Filmler",
+        "${mainUrl}/?cs_section=trends" to "Haftanın Trendleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = request.data.replace("sayfano", page.toString())
-
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
             "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "X-Requested-With" to "fetch"
         )
 
+        // Her CloudStream satırı aynı ana sayfayı alıyor; cs_section
+        // parametresi sadece hangi bölümü döndüreceğimizi belirliyor.
         val doc = app.get(
-            url,
+            mainUrl,
             headers = headers,
             referer = mainUrl,
             interceptor = interceptor
         ).document
 
-        val home = doc.select(
-            "a[href*='/film/'], a[href*='/dizi/'], a[href*='/anime/']"
-        )
-            .mapNotNull { it.toSearchResult() }
-            .distinctBy { it.url }
+        val sectionName = request.name.trim()
+
+        val sectionTitle = when {
+            sectionName.equals("Dizi Bölümleri", true) -> "Dizi Bölümleri"
+            sectionName.equals("Yeni Diziler", true) -> "Yeni Diziler"
+            sectionName.equals("Yeni Filmler", true) -> "Yeni Filmler"
+            sectionName.equals("Haftanın Trendleri", true) -> "Haftanın trendleri"
+            else -> sectionName
+        }
+
+        val heading = doc.select("h2, h3, h4").firstOrNull {
+            it.text().trim().equals(sectionTitle, ignoreCase = true)
+        }
+
+        if (heading == null) {
+            Log.w("Diziyo", "Ana sayfa bölümü bulunamadı: $sectionTitle")
+            return newHomePageResponse(request.name, emptyList())
+        }
+
+        // Başlığın yakınındaki en küçük kapsayıcıyı buluyoruz.
+        // Böylece başka bölümlerdeki kartlar yanlışlıkla bu satıra girmez.
+        val candidates = mutableListOf<Element>()
+        var current: Element? = heading.parent()
+
+        repeat(5) {
+            current?.let { candidates.add(it) }
+            current = current?.parent()
+        }
+
+        val section = candidates
+            .map { element ->
+                val links = element.select("a[href]").count { link ->
+                    val href = link.attr("href")
+                    href.contains("/dizi/") ||
+                    href.contains("/film/") ||
+                    href.contains("/kategori/bolum/") ||
+                    href.contains("/trend")
+                }
+                element to links
+            }
+            .firstOrNull { it.second >= 3 }
+            ?.first
+            ?: heading.parent()
+
+        val home = section
+            ?.select("a[href]")
+            ?.mapNotNull { it.toSearchResult() }
+            ?.distinctBy { it.url }
+            ?: emptyList()
 
         return newHomePageResponse(request.name, home)
     }
@@ -103,37 +147,43 @@ class Diziyo : MainAPI() {
 
         val isMovie = href.contains("/film/")
         val isSeries = href.contains("/dizi/")
-        val isAnime = href.contains("/anime/")
+        val isEpisode = href.contains("/kategori/bolum/") ||
+                Regex("/sezon-[^/]+/bolum-[^/]+", RegexOption.IGNORE_CASE).containsMatchIn(href)
 
-        if (!isMovie && !isSeries && !isAnime) return null
+        // Ana sayfadaki menü ve "Tümünü gör" bağlantılarını alma.
+        if (!isMovie && !isSeries && !isEpisode) return null
 
         val image = selectFirst("img")
         val posterUrl = fixUrlNull(
-            image?.attr("data-src")
-                ?.takeIf { it.isNotBlank() }
-                ?: image?.attr("data-lazy-src")
-                    ?.takeIf { it.isNotBlank() }
+            image?.attr("data-src")?.takeIf { it.isNotBlank() }
+                ?: image?.attr("data-lazy-src")?.takeIf { it.isNotBlank() }
+                ?: image?.attr("data-original")?.takeIf { it.isNotBlank() }
                 ?: image?.attr("src")
         )
 
-        val title = attr("title")
-            .takeIf { it.isNotBlank() }
-            ?: image?.attr("alt")
-                ?.takeIf { it.isNotBlank() }
-            ?: selectFirst(".title, h2, h3, h4")
-                ?.text()
-                ?.trim()
-                ?.takeIf { it.isNotBlank() }
+        val title = attr("title").trim().takeIf { it.isNotBlank() }
+            ?: image?.attr("alt")?.trim()?.takeIf { it.isNotBlank() }
+            ?: selectFirst(".title, .name, h2, h3, h4")?.text()?.trim()?.takeIf { it.isNotBlank() }
             ?: text().trim().replace(Regex("\\s+"), " ")
 
         if (title.isBlank()) return null
 
         return when {
-            isMovie -> newMovieSearchResponse(title, href, TvType.Movie) {
-                this.posterUrl = posterUrl
+            isEpisode -> {
+                // Bölüm bağlantıları doğrudan bölüm sayfasına gider.
+                newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                    this.posterUrl = posterUrl
+                }
             }
-            else -> newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
+            isMovie -> {
+                newMovieSearchResponse(title, href, TvType.Movie) {
+                    this.posterUrl = posterUrl
+                }
+            }
+            else -> {
+                newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                    this.posterUrl = posterUrl
+                }
             }
         }
     }
