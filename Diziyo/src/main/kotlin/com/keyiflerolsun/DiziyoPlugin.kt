@@ -9,4 +9,4 @@ class DiziyoPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(Diziyo())
     }
-}A
+}
