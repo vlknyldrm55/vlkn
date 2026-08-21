@@ -2,9 +2,7 @@
 
 package com.keyiflerolsun
 
-import android.content.Context
 import android.util.Log
-import androidx.preference.PreferenceManager
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
@@ -14,23 +12,25 @@ import java.io.InputStream
 class vy : MainAPI() {
     override var name = "vy"
     
-    override var mainUrl: String
-        get() {
-            val context: Context? = AcraApplication.context
-            val sharedPref = if (context != null) PreferenceManager.getDefaultSharedPreferences(context) else null
-            val userPassword = sharedPref?.getString("vy_password", "") ?: ""
-            
-            return "https://my-stream.volkan5569.workers.dev/?key=$userPassword"
-        }
-        set(value) {}
+    // Doğrudan sabit Worker adresinizi yazın, derleyici hatasını çözen kısım burasıdır:
+    override var mainUrl = "https://my-stream.volkan5569.workers.dev"
 
     override var lang = "tr"
     override val hasMainPage = true
     override val hasDownloadSupport = false
     override val supportedTypes = setOf(TvType.Live)
 
+    // İstek atarken kullanıcının girdiği şifreyi dinamik olarak alıp URL'e ekleyen yardımcı fonksiyon:
+    private fun getAuthUrl(): String {
+        val context = AcraApplication.context ?: return mainUrl
+        val sharedPref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+        val userPassword = sharedPref.getString("vy_password", "") ?: ""
+        return "$mainUrl/?key=$userPassword"
+    }
+
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
+        // mainUrl yerine getAuthUrl() çağırıyoruz
+        val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
 
         return newHomePageResponse(
             kanallar.items.groupBy { it.attributes["group-title"] }.map { group ->
@@ -59,7 +59,7 @@ class vy : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
+        val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
 
         return kanallar.items.filter { it.title.toString().lowercase().contains(query.lowercase()) }.map { kanal ->
             val streamurl   = kanal.url.toString()
@@ -89,7 +89,7 @@ class vy : MainAPI() {
             "» ${loadData.group} | ${loadData.nation} «"
         }
 
-        val kanallar        = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
+        val kanallar        = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
         val recommendations = mutableListOf<LiveSearchResponse>()
 
         for (kanal in kanallar.items) {
@@ -125,7 +125,7 @@ class vy : MainAPI() {
         val loadData = fetchDataFromUrlOrJson(data)
         Log.d("IPTV", "loadData » $loadData")
 
-        val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
+        val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
         val kanal    = kanallar.items.first { it.url == loadData.url }
         Log.d("IPTV", "kanal » $kanal")
 
@@ -151,7 +151,7 @@ class vy : MainAPI() {
         if (data.startsWith("{")) {
             return parseJson<LoadData>(data)
         } else {
-            val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
+            val kanallar = IptvPlaylistParser().parseM3U(app.get(getAuthUrl()).text)
             val kanal    = kanallar.items.first { it.url == data }
 
             val streamurl   = kanal.url.toString()
@@ -179,22 +179,10 @@ data class PlaylistItem(
 
 class IptvPlaylistParser {
 
-    /**
-     * Parse M3U8 string into [Playlist]
-     *
-     * @param content M3U8 content string.
-     * @throws PlaylistParserException if an error occurs.
-     */
     fun parseM3U(content: String): Playlist {
         return parseM3U(content.byteInputStream())
     }
 
-    /**
-     * Parse M3U8 content [InputStream] into [Playlist]
-     *
-     * @param input Stream of input data.
-     * @throws PlaylistParserException if an error occurs.
-     */
     @Throws(PlaylistParserException::class)
     fun parseM3U(input: InputStream): Playlist {
         val reader = input.bufferedReader()
@@ -257,25 +245,20 @@ class IptvPlaylistParser {
         return Playlist(playlistItems)
     }
 
-    /** Replace "" (quotes) from given string. */
     private fun String.replaceQuotesAndTrim(): String {
         return replace("\"", "").trim()
     }
 
-    /** Check if given content is valid M3U8 playlist. */
     private fun String.isExtendedM3u(): Boolean = startsWith(EXT_M3U)
 
-    /** Get title of media. */
     private fun String.getTitle(): String? {
         return split(",").lastOrNull()?.replaceQuotesAndTrim()
     }
 
-    /** Get media url. */
     private fun String.getUrl(): String? {
         return split("|").firstOrNull()?.replaceQuotesAndTrim()
     }
 
-    /** Get url parameter with key. */
     private fun String.getUrlParameter(key: String): String? {
         val urlRegex     = Regex("^(.*)\\|", RegexOption.IGNORE_CASE)
         val keyRegex     = Regex("$key=(\\w[^&]*)", RegexOption.IGNORE_CASE)
@@ -284,7 +267,6 @@ class IptvPlaylistParser {
         return keyRegex.find(paramsString)?.groups?.get(1)?.value
     }
 
-    /** Get attributes from `#EXTINF` tag as Map<String, String>. */
     private fun String.getAttributes(): Map<String, String> {
         val extInfRegex      = Regex("(#EXTINF:.?[0-9]+)", RegexOption.IGNORE_CASE)
         val attributesString = replace(extInfRegex, "").replaceQuotesAndTrim().split(",").first()
@@ -298,7 +280,6 @@ class IptvPlaylistParser {
             .toMap()
     }
 
-    /** Get value from a tag. */
     private fun String.getTagValue(key: String): String? {
         val keyRegex = Regex("$key=(.*)", RegexOption.IGNORE_CASE)
 
@@ -312,7 +293,6 @@ class IptvPlaylistParser {
     }
 }
 
-/** Exception thrown when an error occurs while parsing playlist. */
 sealed class PlaylistParserException(message: String) : Exception(message) {
     class InvalidHeader : PlaylistParserException("Invalid file header. Header doesn't start with #EXTM3U")
 }
