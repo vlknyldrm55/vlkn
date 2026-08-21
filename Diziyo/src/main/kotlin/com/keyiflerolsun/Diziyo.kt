@@ -4,10 +4,6 @@ package com.keyiflerolsun
 
 import android.util.Log
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
@@ -41,14 +37,14 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 class Diziyo : MainAPI() {
-    override var mainUrl              = "https://www.diziyo.so"
-    override var name                 = "Diziyo"
-    override val hasMainPage          = true
-    override var lang                 = "tr"
-    override val hasQuickSearch       = true
-    override val supportedTypes       = setOf(TvType.Movie, TvType.TvSeries)
+    override var mainUrl                   = "https://www.diziyo.so"
+    override var name                      = "Diziyo"
+    override val hasMainPage               = true
+    override var lang                      = "tr"
+    override val hasQuickSearch            = true
+    override val supportedTypes            = setOf(TvType.Movie, TvType.TvSeries)
 
-    override var sequentialMainPage = true        // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
+    override var sequentialMainPage = true         // * https://recloudstream.github.io/dokka/-cloudstream/com.lagradost.cloudstream3/-main-a-p-i/index.html#-2049735995%2FProperties%2F101969414
     override var sequentialMainPageDelay       = 150L  // ? 0.15 saniye
     override var sequentialMainPageScrollDelay = 150L  // ? 0.15 saniye
 
@@ -71,47 +67,45 @@ class Diziyo : MainAPI() {
     }
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/dizi-bolumleri/sayfano/" to "Dizi Bölümleri",
-        "${mainUrl}/diziler/sayfano/" to "Yeni Diziler",
         "${mainUrl}/filmler/sayfano/" to "Yeni Filmler",
+        "${mainUrl}/diziler/sayfano/" to "Yeni Diziler",
+        "${mainUrl}/dizi-bolumleri/sayfano/" to "Dizi Bölümleri",
+        "${mainUrl}/animeler/sayfano/" to "Animeler",
         "${mainUrl}/trendler/sayfano/" to "Haftanın Trendleri",
         "${mainUrl}/filmler/turkce-dublaj/sayfano/" to "Türkçe Dublaj Filmler",
         "${mainUrl}/filmler/turkce-altyazi/sayfano/" to "Türkçe Altyazı Filmler",
         "${mainUrl}/filmler/yerli/sayfano/" to "Yerli Filmler",
         "${mainUrl}/filmler/seri-filmler/sayfano/" to "Seri Filmler",
-        "${mainUrl}/animeler/sayfano/" to "Animeler",
         "${mainUrl}/trendler/film-ilk-250/sayfano/" to "Film İlk 250",
-        "${mainUrl}/trendler/dizi-ilk-250/sayfano/" to "Dizi İlk 250",
-        "${mainUrl}/trendler/anime-ilk-250/sayfano/" to "Anime İlk 250"
+        "${mainUrl}/trendler/dizi-ilk-250/sayfano/" to "Dizi İlk 250"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         val url = request.data.replace("sayfano", page.toString())
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
-            "user-agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
-            "Accept" to "*/*", "X-Requested-With" to "fetch"
+            "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "X-Requested-With" to "fetch"
         )
-        val doc = app.get(url, headers = headers, referer = mainUrl, interceptor = interceptor)
-        val home: List<SearchResponse>?
-        if (!doc.toString().contains("Sayfa Bulunamadı")) {
-            val aa: HDFC = objectMapper.readValue(doc.toString())
-            val document = Jsoup.parse(aa.html)
-
-            home = document.select("a").mapNotNull { it.toSearchResult() }
-            return newHomePageResponse(request.name, home)
-        }
-        return newHomePageResponse(request.name, emptyList())
+        val doc = app.get(url, headers = headers, referer = mainUrl, interceptor = interceptor).document
+        
+        val home = doc.select("div.col, div.item, .film-box, article").mapNotNull { it.toSearchResult() }
+        
+        return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.attr("title")
-        val href = fixUrlNull(this.attr("href")) ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+        val title = this.selectFirst("a")?.attr("title") ?: this.selectFirst(".title, h3, h4")?.text() ?: return null
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src") ?: this.selectFirst("img")?.attr("src"))
 
-        return newMovieSearchResponse(title, href, TvType.Movie) { this.posterUrl = posterUrl }
+        val type = if (href.contains("/dizi/") || href.contains("/sezon")) TvType.TvSeries else TvType.Movie
+
+        return if (type == TvType.TvSeries) {
+            newTvSeriesSearchResponse(title, href, type) { this.posterUrl = posterUrl }
+        } else {
+            newMovieSearchResponse(title, href, type) { this.posterUrl = posterUrl }
+        }
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
@@ -141,18 +135,18 @@ class Diziyo : MainAPI() {
     override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url, interceptor = interceptor).document
 
-        val title       = document.selectFirst("h1.section-title")?.text()?.substringBefore(" izle") ?: return null
-        val poster      = fixUrlNull(document.select("aside.post-info-poster img.lazyload").lastOrNull()?.attr("data-src"))
-        val tags        = document.select("div.post-info-genres a").map { it.text() }
-        val year        = document.selectFirst("div.post-info-year-country a")?.text()?.trim()?.toIntOrNull()
-        val tvType      = if (document.select("div.seasons").isEmpty()) TvType.Movie else TvType.TvSeries
-        val description = document.selectFirst("article.post-info-content > p")?.text()?.trim()
-        val actors      = document.select("div.post-info-cast a").map {
-            Actor(it.selectFirst("strong")!!.text(), it.select("img").attr("data-src"))
+        val title       = document.selectFirst("h1, .page-title, .film-title")?.text()?.substringBefore(" izle")?.trim() ?: return null
+        val poster      = fixUrlNull(document.selectFirst(".poster img, .film-poster img, .dt-poster img")?.attr("data-src") ?: document.selectFirst(".poster img, .film-poster img, .dt-poster img")?.attr("src"))
+        val tags        = document.select(".genres a, .kategoriler a, .film-genres a").map { it.text() }
+        val year        = document.selectFirst(".year, .tarih, span:contains(Yapım)")?.text()?.trim()?.toIntOrNull()
+        val tvType      = if (document.select("div.seasons, .bolumler-list, .season-list").isEmpty()) TvType.Movie else TvType.TvSeries
+        val description = document.selectFirst(".summary, .description, .film-summary, article p")?.text()?.trim()
+        val actors      = document.select(".cast-item, .oyuncular a, .actor").map {
+            Actor(it.selectFirst(".name, strong")?.text() ?: it.text(), it.select("img").attr("data-src"))
         }
 
-        val recommendations = document.select("div.section-slider-container div.slider-slide").mapNotNull {
-                val recName      = it.selectFirst("a")?.attr("title") ?: return@mapNotNull null
+        val recommendations = document.select(".slider-slide, .related-film, .benzer-item").mapNotNull {
+                val recName      = it.selectFirst("a")?.attr("title") ?: it.selectFirst(".title")?.text() ?: return@mapNotNull null
                 val recHref      = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
                 val recPosterUrl = fixUrlNull(it.selectFirst("img")?.attr("data-src")) ?: fixUrlNull(it.selectFirst("img")?.attr("src"))
 
@@ -163,9 +157,8 @@ class Diziyo : MainAPI() {
 
         return if (tvType == TvType.TvSeries) {
             val trailer  = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
-            Log.d("HDCH", "Trailer: $trailer")
-            val episodes = document.select("div.seasons-tab-content a").mapNotNull {
-                val epName    = it.selectFirst("h4")?.text()?.trim() ?: return@mapNotNull null
+            val episodes = document.select(".seasons-tab-content a, .episode-list a, .bolum-item").mapNotNull {
+                val epName    = it.selectFirst("h4, span, .title")?.text()?.trim() ?: return@mapNotNull null
                 val epHref    = fixUrlNull(it.attr("href")) ?: return@mapNotNull null
                 val epEpisode = Regex("""(\d+)\. ?Bölüm""").find(epName)?.groupValues?.get(1)?.toIntOrNull()
                 val epSeason  = Regex("""(\d+)\. ?Sezon""").find(epName)?.groupValues?.get(1)?.toIntOrNull() ?: 1
@@ -188,7 +181,6 @@ class Diziyo : MainAPI() {
             }
         } else {
             val trailer = document.selectFirst("div.post-info-trailer button")?.attr("data-modal")?.substringAfter("trailer/", "")?.let { if (it.isNotEmpty()) "https://www.youtube.com/watch?v=$it" else null }
-            Log.d("HDCH", "Trailer: $trailer")
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl       = poster
                 this.year            = year
@@ -205,21 +197,17 @@ class Diziyo : MainAPI() {
 
     private fun decryptLocalUrl(unpackedScript: String): String? {
         try {
-            // 1. Extract parts array
             val partsMatch = """\(\[\s*((?:['"][^'"]+['"]\s*,?\s*)+)\]\)""".toRegex().find(unpackedScript)
             val parts = partsMatch?.groupValues?.get(1)?.split(",")?.map { 
                 it.trim().trim('\'', '"').replace("\\/", "/") 
             } ?: return null
 
-            // 2. Extract magicNum and magicOffset
             val moduloMatch = """(\d+)\s*%\s*\(i\s*\+\s*(\d+)\)""".toRegex().find(unpackedScript)
             val magicNum = moduloMatch?.groupValues?.get(1)?.toLongOrNull() ?: 399756995L
             val magicOffset = moduloMatch?.groupValues?.get(2)?.toIntOrNull() ?: 5
 
-            // 3. Isolate function body
             val funcBody = unpackedScript.substringAfter("function dc_").substringBefore("function d1x")
 
-            // 4. Extract operations and their shift values in execution order
             val operations = mutableListOf<Pair<Int, DecOp>>()
 
             var index = funcBody.indexOf("atob(")
@@ -257,7 +245,6 @@ class Diziyo : MainAPI() {
 
             var result = parts.joinToString("")
 
-            // Execute operations in order
             for (op in operations) {
                 val action = op.second
                 when (action.name) {
@@ -290,7 +277,6 @@ class Diziyo : MainAPI() {
                 }
             }
 
-            // 5. Modulo Unmix
             val unmix = StringBuilder()
             for (i in result.indices) {
                 val charCode = result[i].code.toLong()
@@ -308,12 +294,11 @@ class Diziyo : MainAPI() {
 
     private suspend fun invokeLocalSource(source: String, url: String, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit ) {
         val script    = app.get(url, referer = "${mainUrl}/", interceptor = interceptor).document.select("script").find { it.data().contains("sources:") }?.data() ?: return
-        Log.d("HDCH", "script » $script")
         val unpackedScript = getAndUnpack(script)
         val decryptedUrl = decryptLocalUrl(unpackedScript) ?: return
         val lastUrl = decryptedUrl.substringAfter("https").let { "https$it" }
         val subData   = script.substringAfter("tracks: [").substringBefore("]")
-        Log.d("HDCH", "subData » $subData")
+        
         AppUtils.tryParseJson<List<SubSource>>("[${subData}]")?.filter { it.kind == "captions"}?.forEach {
             val subtitleUrl = "${mainUrl}${it.file}/"
 
@@ -325,9 +310,6 @@ class Diziyo : MainAPI() {
             val subtitleResponse = app.get(subtitleUrl, headers = headers, allowRedirects=true, interceptor = interceptor)
             if (subtitleResponse.isSuccessful) {
                 subtitleCallback(newSubtitleFile(it.language.toString(), subtitleUrl))
-                Log.d("HDCH", "Subtitle added: $subtitleUrl")
-            } else {
-                Log.d("HDCH", "Subtitle URL inaccessible: ${subtitleResponse.code}")
             }
         }
         callback.invoke(
@@ -343,64 +325,52 @@ class Diziyo : MainAPI() {
         )
     }
 
-override suspend fun loadLinks(
-    data: String,
-    isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit
-): Boolean {
-    Log.d("HDCH", "data » $data")
-    val document = app.get(data, interceptor = interceptor).document
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        val document = app.get(data, interceptor = interceptor).document
 
-    document.select("div.alternative-links").map { element ->
-        element to element.attr("data-lang").uppercase()
-    }.forEach { (element, langCode) ->
-        element.select("button.alternative-link").map { button ->
-            button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
-        }.forEach { (source, videoID) ->
-            val apiGet = app.get(
-    "${mainUrl}/video/$videoID/", 
-    interceptor = interceptor,
-    headers = mapOf(
-        "Content-Type" to "application/json",
-        "X-Requested-With" to "fetch",
-        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0" // Bunu ekleyelim
-    ),
-    referer = data
-).text
-            Log.d("HDCH", "Found videoID: $videoID")
-            var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
-            Log.d("HDCH", "$iframe » $iframe")
-            if (iframe.contains("rapidrame")) {
-                iframe = "${mainUrl}/rplayer/" + iframe.substringAfter("?rapidrame_id=")
-            } else if (iframe.contains("mobi")) {
-                val iframeDoc = Jsoup.parse(apiGet)
-                iframe = fixUrlNull(iframeDoc.selectFirst("iframe")?.attr("data-src")) ?: return@forEach
+        document.select("div.alternative-links").map { element ->
+            element to element.attr("data-lang").uppercase()
+        }.forEach { (element, langCode) ->
+            element.select("button.alternative-link").map { button ->
+                button.text().replace("(HDrip Xbet)", "").trim() + " $langCode" to button.attr("data-video")
+            }.forEach { (source, videoID) ->
+                val apiGet = app.get(
+                    "${mainUrl}/video/$videoID/", 
+                    interceptor = interceptor,
+                    headers = mapOf(
+                        "Content-Type" to "application/json",
+                        "X-Requested-With" to "fetch",
+                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0"
+                    ),
+                    referer = data
+                ).text
+                
+                var iframe = Regex("""data-src=\\"([^"]+)""").find(apiGet)?.groupValues?.get(1)!!.replace("\\", "")
+                if (iframe.contains("rapidrame")) {
+                    iframe = "${mainUrl}/rplayer/" + iframe.substringAfter("?rapidrame_id=")
+                } else if (iframe.contains("mobi")) {
+                    val iframeDoc = Jsoup.parse(apiGet)
+                    iframe = fixUrlNull(iframeDoc.selectFirst("iframe")?.attr("data-src")) ?: return@forEach
+                }
+                invokeLocalSource(source, iframe, subtitleCallback, callback)
             }
-            Log.d("HDCH", "$source » $videoID » $iframe")
-            invokeLocalSource(source, iframe, subtitleCallback, callback)
         }
+        return true
     }
-    return true
-}
+
     private data class SubSource(
-        @JsonProperty("file")    val file: String?  = null,
-        @JsonProperty("label")   val label: String? = null,
+        @JsonProperty("file")     val file: String?  = null,
+        @JsonProperty("label")    val label: String? = null,
         @JsonProperty("language") val language: String? = null,
-        @JsonProperty("kind")    val kind: String?  = null
+        @JsonProperty("kind")     val kind: String?  = null
     )
 
     data class Results(
         @JsonProperty("results") val results: List<String> = arrayListOf()
-    )
-    data class HDFC(
-        @JsonProperty("html") val html: String,
-        @JsonProperty("meta") val meta: Meta
-    )
-
-    data class Meta(
-        @JsonProperty("title") val title: String,
-        @JsonProperty("canonical") val canonical: String,
-        @JsonProperty("keywords") val keywords: Boolean
     )
 }
