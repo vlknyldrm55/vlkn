@@ -10,13 +10,13 @@ import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import java.io.InputStream
 
 class DeathlessIptv : MainAPI() {
-    override var mainUrl              = "https://snowy-mountain-b566.volkan5569.workers.dev"
-    override var name                 = "DeathlessIptv"
-    override val hasMainPage          = true
-    override var lang                 = "tr"
-    override val hasQuickSearch       = true
-    override val hasDownloadSupport   = false
-    override val supportedTypes       = setOf(TvType.Live)
+    override var mainUrl                = "https://snowy-mountain-b566.volkan5569.workers.dev"
+    override var name                   = "DeathlessIptv"
+    override val hasMainPage            = true
+    override var lang                   = "tr"
+    override val hasQuickSearch         = true
+    override val hasDownloadSupport     = false
+    override val supportedTypes         = setOf(TvType.Live)
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val kanallar = IptvPlaylistParser().parseM3U(app.get(mainUrl).text)
@@ -40,7 +40,6 @@ class DeathlessIptv : MainAPI() {
                         this.lang = nation
                     }
                 }
-
 
                 HomePageList(title, show, isHorizontalImages = true)
             },
@@ -126,13 +125,12 @@ class DeathlessIptv : MainAPI() {
                 source  = this.name,
                 name    = this.name,
                 url     = loadData.url,
-
-                     type = ExtractorLinkType.M3U8
-                 ) {
-                     this.referer = kanal.headers["referrer"] ?: ""
-                     this.headers = kanal.headers
-                     quality = Qualities.Unknown.value
-                 }
+                type = ExtractorLinkType.M3U8
+               ) {
+                   this.referer = kanal.headers["referrer"] ?: ""
+                   this.headers = kanal.headers
+                   quality = Qualities.Unknown.value
+               }
         )
 
         return true
@@ -281,7 +279,7 @@ class IptvPlaylistParser {
      *
      * Input:
      * ```
-     * https://example.com/sample.m3u8|user-agent="Custom"
+     * [https://example.com/sample.m3u8](https://example.com/sample.m3u8)|user-agent="Custom"
      * ```
      *
      * Result: https://example.com/sample.m3u8
@@ -297,7 +295,7 @@ class IptvPlaylistParser {
      *
      * Input:
      * ```
-     * http://192.54.104.122:8080/d/abcdef/video.mp4|User-Agent=Mozilla&Referer=CustomReferrer
+     * [http://192.54.104.122:8080/d/abcdef/video.mp4](http://192.54.104.122:8080/d/abcdef/video.mp4)|User-Agent=Mozilla&Referer=CustomReferrer
      * ```
      *
      * If given key is `user-agent`, then
@@ -351,7 +349,7 @@ class IptvPlaylistParser {
      *
      * Input:
      * ```
-     * #EXTVLCOPT:http-referrer=http://example.com/
+     * #EXTVLCOPT:http-referrer=[http://example.com/](http://example.com/)
      * ```
      *
      * Result: http://example.com/
