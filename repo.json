@@ -1,0 +1,8 @@
+{
+  "name": "Turkish Providers Repository | @vlkn",
+  "description": "Türkçe içerikli eklenti havuzu",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/vlknyldrm55/vlkn/builds/plugins.json"
+  ]
+}
